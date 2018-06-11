@@ -29,41 +29,6 @@ def create_pool(loop, **kw):
         minsize=kw.get('minsize', 1),
         loop=loop
     )
-# 要执行INSERT、UPDATE、DELETE语句，可以定义一个通用的execute()函数，
-# 因为这3种SQL的执行都需要相同的参数，以及返回一个整数表示影响的行数：
-# execute()函数和select()函数所不同的是，cursor对象不返回结果集，
-# 而是通过rowcount返回结果数。
-
-# async def select(sql, args, size=None):
-#     log(sql, args)
-#     global __pool
-#     async with __pool.get() as conn:
-#         async with conn.cursor(aiomysql.DictCursor) as cur:
-#             await cur.execute(sql.replace('?', '%s'), args or ())
-#             if size:
-#                 rs = await cur.fetchmany(size)
-#             else:
-#                 rs = await cur.fetchall()
-#         logging.info('rows returned: %s' % len(rs))
-#         return rs
-
-# async def execute(sql, args, autocommit=True):
-#     log(sql)
-#     async with __pool.get() as conn:
-#         if not autocommit:
-#             await conn.begin()
-#         try:
-#             async with conn.cursor(aiomysql.DictCursor) as cur:
-#                 await cur.execute(sql.replace('?', '%s'), args)
-#                 affected = cur.rowcount
-#             if not autocommit:
-#                 await conn.commit()
-#         except BaseException as e:
-#             if not autocommit:
-#                 await conn.rollback()
-#             raise
-#         return affected
-
 
 @asyncio.coroutine
 def select(sql, args, size=None):
@@ -158,7 +123,6 @@ class ModelMetaclass(type):
             if isinstance(v, Field):
                 logging.info('found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
-                #mappings[id] = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
                 if v.primary_key:
                     if primaryKey:
                         raise StandardError('Duplicate primary key for field: %s' % k)
@@ -170,10 +134,10 @@ class ModelMetaclass(type):
         for k in mappings.keys():
             attrs.pop(k)
         escaped_fields = list(map(lambda f: '`%s`' % f, fields))
-        attrs['__mappings__'] = mappings # 保存属性和列的映射关系
+        attrs['__mappings__'] = mappings
         attrs['__table__'] = tableName
-        attrs['__primary_key__'] = primaryKey # 主键属性名
-        attrs['__fields__'] = fields # 除主键外的属性名
+        attrs['__primary_key__'] = primaryKey
+        attrs['__fields__'] = fields
         attrs['__select__'] = 'select `%s`, %s from `%s`' % (primaryKey, ', '.join(escaped_fields), tableName)
         attrs['__insert__'] = 'insert into `%s` (%s, `%s`) values (%s)' % (tableName, ', '.join(escaped_fields), primaryKey, create_args_string(len(escaped_fields) + 1))
         attrs['__update__'] = 'update `%s` set %s where `%s`=?' % (tableName, ', '.join(map(lambda f: '`%s`=?' % (mappings.get(f).name or f), fields)), primaryKey)
@@ -204,7 +168,6 @@ class Model(dict, metaclass=ModelMetaclass):
         if value is None:
             field = self.__mappings__[key]
             if field.default is not None:
-                # python中的3元运算符格式
                 value = field.default() if callable(field.default) else field.default
                 logging.debug('using default value for %s: %s' % (key, str(value)))
                 setattr(self, key, value)
@@ -282,6 +245,5 @@ class Model(dict, metaclass=ModelMetaclass):
         rows = yield from execute(self.__delete__, args)
         if rows != 1:
             logging.warn('failed to remove by primary key: affected rows: %s' % rows)
-
 
 logging.info('__file__ is %s' % __file__)

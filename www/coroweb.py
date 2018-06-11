@@ -39,13 +39,6 @@ def get_required_kw_args(fn):
 			args.append(name)
 	return tuple(args)
 
-# def person(name, age, *, city, job):
-#     pass
-# >>> person('jack',23)
-# Traceback (most recent call last):
-#   File "<pyshell#147>", line 1, in <module>
-#     person('jack',23)
-# TypeError: person() missing 2 required keyword-only arguments: 'city' and 'job'
 
 def get_named_kw_args(fn):
 	args = []
@@ -86,21 +79,6 @@ def has_request_arg(fn):
             raise ValueError('request parameter must be the last named parameter in function: %s%s' % (fn.__name__, str(sig)))
     return found
 
-# The Signature object represents the call signature of
-#  a callable object and its return annotation. 
-#  To retrieve a Signature object, use the signature() function.
-# inspect.signature(callable, *, follow_wrapped=True) 
-# Return a Signature object for the given callable:
-# >>> from inspect import signature
-# >>> def foo(a, *, b:int, **kwargs):
-# ...     pass
-# >>> sig = signature(foo)
-# >>> str(sig)
-# '(a, *, b:int, **kwargs)'
-# >>> str(sig.parameters['b'])
-# 'b:int'
-# >>> sig.parameters['b'].annotation
-# <class 'int'>
 
 class RequestHandler(object):
 
@@ -233,40 +211,3 @@ def add_routes(app, module_name):
             #logging.info('path========>%s' % path)
             if method and path:
                 add_route(app, fn)
-
-# getattr(object, name[, default]) 
-# Return the value of the named attribute of object. 
-# name must be a string. If the string is the name of 
-# one of the object’s attributes, the result is the value of 
-# that attribute. For example, getattr(x, 'foobar') is equivalent 
-# to x.foobar. If the named attribute does not exist, default is 
-# returned if provided, otherwise AttributeError is raised.
-# 
-#  callable(object) 
-# Return True if the object argument appears callable, 
-# False if not. If this returns true, it is still possible
-#  that a call fails, but if it is false, calling object will
-#   never succeed. Note that classes are callable (calling a 
-#     class returns a new instance); instances are callable if 
-#   their class has a __call__() method.
-#   
-#   @post('/api/blogs')
-# def api_create_blog(request, *, name, summary, content):
-#     check_admin(request)
-#     if not name or not name.strip():
-#         raise APIValueError('name', 'name cannot be empty.')
-#     if not summary or not summary.strip():
-#         raise APIValueError('summary', 'summary cannot be empty.')
-#     if not content or not content.strip():
-#         raise APIValueError('content', 'content cannot be empty.')
-#     blog = Blog(user_id=request.__user__.id, user_name=request.__user__.name, user_image=request.__user__.image, name=name.strip(), summary=summary.strip(), content=content.strip())
-#     yield from blog.save()
-#     return blog
-# name is request,
-# POSITIONAL_OR_KEYWORD
-# name is name,
-# KEYWORD_ONLY
-# name is summary,
-# KEYWORD_ONLY
-# name is content,
-# KEYWORD_ONLY
