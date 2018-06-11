@@ -3,19 +3,21 @@
 __author__ = 'Zhijiang Xu'
 
 import asyncio, logging
-
 import aiomysql
+
+
 logging.info('__file__ is %s' % __file__)
+
 
 def log(sql, args=()):
     logging.info('SQL: %s' % sql)
+
 
 @asyncio.coroutine
 def create_pool(loop, **kw):
     logging.info('create database connection pool...')
     global __pool
     __pool = yield from aiomysql.create_pool(
-        #把yield from<===>await
         host=kw.get('host', 'localhost'),
         port=kw.get('port', 3306),
         user=kw['user'],
@@ -27,13 +29,10 @@ def create_pool(loop, **kw):
         minsize=kw.get('minsize', 1),
         loop=loop
     )
-# Python引入了with语句来自动帮我们调用close()方法
-# yield from将调用一个子协程（也就是在一个协程中调用另一个协程）
-#并直接获得子协程的返回结果。
-
 # 要执行INSERT、UPDATE、DELETE语句，可以定义一个通用的execute()函数，
 # 因为这3种SQL的执行都需要相同的参数，以及返回一个整数表示影响的行数：
-# execute()函数和select()函数所不同的是，cursor对象不返回结果集，而是通过rowcount返回结果数。
+# execute()函数和select()函数所不同的是，cursor对象不返回结果集，
+# 而是通过rowcount返回结果数。
 
 # async def select(sql, args, size=None):
 #     log(sql, args)
@@ -65,6 +64,7 @@ def create_pool(loop, **kw):
 #             raise
 #         return affected
 
+
 @asyncio.coroutine
 def select(sql, args, size=None):
     log(sql, args)
@@ -79,6 +79,7 @@ def select(sql, args, size=None):
         yield from cur.close()
         logging.info('rows returned: %s' % len(rs))
         return rs
+
 
 @asyncio.coroutine
 def execute(sql, args, autocommit=True):
@@ -105,7 +106,7 @@ def create_args_string(num):
         L.append('?')
     return ', '.join(L)
 
-#class中每个属性是什么类型
+
 class Field(object):
 
     def __init__(self, name, column_type, primary_key, default):
@@ -142,46 +143,32 @@ class TextField(Field):
     def __init__(self, name=None, default=None):
         super().__init__(name, 'text', False, default)
 
+
 class ModelMetaclass(type):
 
     def __new__(cls, name, bases, attrs):
-        if name=='Model':
+        if name == 'Model':
             return type.__new__(cls, name, bases, attrs)
-        #获取table name,如果没有table name，就把类名作为table name
         tableName = attrs.get('__table__', None) or name
         logging.info('found model: %s (table: %s)' % (name, tableName))
         mappings = dict()
-        # list是一种有序的集合，可以随时添加和删除其中的元素
-        #list是一个可变的有序表，所以，可以往list中追加元素到末尾：list.append()
         fields = []
         primaryKey = None
-        # attrs is a dict,如果要同时迭代key和value，可以用for k, v in d.items()。
         for k, v in attrs.items():
             if isinstance(v, Field):
-                logging.info('  found mapping: %s ==> %s' % (k, v))
+                logging.info('found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v
                 #mappings[id] = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
                 if v.primary_key:
-                    # 找到主键:
                     if primaryKey:
                         raise StandardError('Duplicate primary key for field: %s' % k)
                     primaryKey = k
-                    #primaryKey = id
                 else:
                     fields.append(k)
         if not primaryKey:
             raise StandardError('Primary key not found.')
         for k in mappings.keys():
-            #要删除一个key，用pop(key)方法，对应的value也会从dict中删除：
             attrs.pop(k)
-        # >>> def f(x):
-        # ...     return x * x
-        # ...
-        # >>> r = map(f, [1, 2, 3, 4, 5, 6, 7, 8, 9])
-        # >>> list(r)
-        # [1, 4, 9, 16, 25, 36, 49, 64, 81]
-        # map()传入的第一个参数是f，即函数对象本身。由于结果是一个Iterator，
-        #Iterator是惰性序列，因此通过list()函数让它把整个序列都计算出来并返回一个list。
         escaped_fields = list(map(lambda f: '`%s`' % f, fields))
         attrs['__mappings__'] = mappings # 保存属性和列的映射关系
         attrs['__table__'] = tableName
@@ -192,6 +179,7 @@ class ModelMetaclass(type):
         attrs['__update__'] = 'update `%s` set %s where `%s`=?' % (tableName, ', '.join(map(lambda f: '`%s`=?' % (mappings.get(f).name or f), fields)), primaryKey)
         attrs['__delete__'] = 'delete from `%s` where `%s`=?' % (tableName, primaryKey)
         return type.__new__(cls, name, bases, attrs)
+
 
 class Model(dict, metaclass=ModelMetaclass):
 
@@ -294,5 +282,6 @@ class Model(dict, metaclass=ModelMetaclass):
         rows = yield from execute(self.__delete__, args)
         if rows != 1:
             logging.warn('failed to remove by primary key: affected rows: %s' % rows)
+
 
 logging.info('__file__ is %s' % __file__)
