@@ -7,15 +7,13 @@ __author__ = 'Zhijiang Xu'
 
 import re, time, json, logging, hashlib, base64, asyncio
 
-import markdown2
-
 from aiohttp import web
+from .coroweb import get, post
+from .models import User, Comment, Blog, next_id
+from .config import configs
+from .markdown2 import markdown
+from .apis import Page, APIPermissionError, APIResourceNotFoundError, APIValueError
 
-from coroweb import get, post
-from apis import Page, APIValueError, APIResourceNotFoundError
-
-from models import User, Comment, Blog, next_id
-from config import configs
 
 COOKIE_NAME = 'awesession'
 _COOKIE_KEY = configs.session.secret
@@ -90,6 +88,7 @@ def index(*, page='1'):
         'page': page,
         'blogs': blogs
     }
+#index = get('/')(index)
 
 @get('/blog/{id}')
 def get_blog(id):
@@ -97,7 +96,7 @@ def get_blog(id):
     comments = yield from Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
     for c in comments:
         c.html_content = text2html(c.content)
-    blog.html_content = markdown2.markdown(blog.content)
+    blog.html_content = markdown(blog.content)
     return {
         '__template__': 'blog.html',
         'blog': blog,

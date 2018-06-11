@@ -1,12 +1,9 @@
 __author__ = 'Zhijiang Xu'
 
 import asyncio, os, inspect, logging, functools
-
 from urllib import parse
-
 from aiohttp import web
-
-from apis import APIError
+from .apis import APIError
 
 def get(path):
 	'''
@@ -214,13 +211,15 @@ def add_routes(app, module_name):
     else:
         name = module_name[n+1:]
         logging.info('name is %s' % name)
-        #指的是切片操作,从n+1开始取，包括第n+1项
         mod = getattr(__import__(module_name[:n], globals(), locals(), [name]), name)
     #logging.info('mod is %s' % mod)
     #logging.info('mod is %s' % dir(mod))
     for attr in dir(mod):
         #>>> dir(__import__('handlers', globals(),locals()))
-        #['Blog', 'Comment', 'User', '__author__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'asyncio', 'base64', 'get', 'hashlib', 'index', 'json', 'logging', 'next_id', 'post', 're', 'time']
+        #['Blog', 'Comment', 'User', '__author__', '__builtins__', 
+        #'__cached__', '__doc__', '__file__', '__loader__', '__name__', 
+        #'__package__', '__spec__', 'asyncio', 'base64', 'get', 'hashlib', 
+        #'index', 'json', 'logging', 'next_id', 'post', 're', 'time']
         #logging.info('attr is %s' % attr)
         if attr.startswith('_'):
             continue

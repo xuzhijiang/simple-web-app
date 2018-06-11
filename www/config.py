@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-'''
-Configuration
-'''
 
 __author__ = 'Zhijiang Xu'
 
 #先执行config_default脚本
-import config_default, logging
+from .config_default import configs
+import logging
 
 class Dict(dict):
     '''
@@ -53,7 +51,6 @@ def toDict(d):
         D[k] = toDict(v) if isinstance(v, dict) else v
     return D
 logging.info('__file__ is %s' % __file__)
-configs = config_default.configs
 
 #override default Configuration
 try:

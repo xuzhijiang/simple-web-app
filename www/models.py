@@ -6,7 +6,7 @@ __author__ = 'Zhijiang Xu'
 
 import time, uuid, logging
 
-from orm import Model, StringField, BooleanField, FloatField, TextField
+from .orm import Model, StringField, BooleanField, FloatField, TextField
 logging.info('__file__ is %s' % __file__)
 
 def next_id():

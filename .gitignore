@@ -52,3 +52,7 @@ MANIFEST
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Integration Environment
+.idea
+venv

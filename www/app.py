@@ -4,26 +4,18 @@
 __author__ = 'Zhijiang Xu'
 #如何以最快的速度掌握编程，那就是不要复制，而是要自己敲
 
-'''
-async web application.
-'''
-
 import logging
 logging.basicConfig(level=logging.INFO)
 
 import asyncio, os, json, time
 from datetime import datetime
-
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
-
 #导入这个config，就先去执行这个config里面的脚本
-from config import configs
-
-import orm
-from coroweb import add_routes, add_static
-
-from handlers import cookie2user, COOKIE_NAME
+from .config import configs
+from .orm import create_pool
+from .coroweb import add_routes, add_static
+from .handlers import cookie2user, COOKIE_NAME
 
 def init_jinja2(app, **kw):
     logging.info('init jinja2...')
@@ -42,8 +34,7 @@ def init_jinja2(app, **kw):
     filters = kw.get('filters', None)
     if filters is not None:
         for name, f in filters.items():
-        	env.filters[name] = f
-            #键值对
+            env.filters[name] = f
     app['__templating__'] = env
 
 @asyncio.coroutine
@@ -52,7 +43,6 @@ def logger_factory(app, handler):
     @asyncio.coroutine
     def logger(request):
         logging.info('Request: %s %s' % (request.method, request.path))
-        # yield from asyncio.sleep(0.3)
         return (yield from handler(request))
     return logger
 
@@ -122,8 +112,8 @@ def response_factory(app, handler):
                 resp = web.Response(body=app['__templating__'].get_template(template).render(**r).encode('utf-8'))
                 resp.content_type = 'text/html;charset=utf-8'
                 return resp
-        if isinstance(r, int) and t >= 100 and t < 600:
-            return web.Response(t)
+        if isinstance(r, int) and r >= 100 and r < 600:
+            return web.Response(r)
         if isinstance(r, tuple) and len(r) == 2:
             t, m = r
             if isinstance(t, int) and t >= 100 and t < 600:
@@ -154,8 +144,7 @@ def datetime_filter(t):
 
 @asyncio.coroutine
 def init(loop):
-    # **kw是关键字参数，kw接收的是一个dict。
-    yield from orm.create_pool(loop=loop, **configs.db)
+    yield from create_pool(loop=loop, **configs.db)
     app = web.Application(loop=loop, middlewares=[
         logger_factory, auth_factory, response_factory, data_factory
     ])
@@ -163,17 +152,9 @@ def init(loop):
     add_routes(app, 'handlers')
     add_static(app)
     srv = yield from loop.create_server(app.make_handler(), '127.0.0.1', 9001)
-    # Create a TCP server (socket type SOCK_STREAM) bound to host and port.
-    # Return a Server object, its sockets attribute contains created sockets. 
-    # Use the Server.close() method to stop the server: close listening sockets.
-    #wait loop.create_server的结果，赋值给srv
     logging.info('server started at http://127.0.0.1:9001...')
     return srv
 
 loop = asyncio.get_event_loop()
-#execute statement firstly
 loop.run_until_complete(init(loop))
-# Run until the Future is done.
-# If the argument is a coroutine object, it is wrapped by ensure_future().
-# Return the Future’s result, or raise its exception.
 loop.run_forever()
