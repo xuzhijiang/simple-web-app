@@ -32,7 +32,8 @@ def get_required_kw_args(fn):
     args = []
     params = inspect.signature(fn).parameters
     for name, param in params.items():
-        if param.kind == inspect.Parameter.KEYWORD_ONLY and param.default == inspect.Parameter.empty:
+        if param.kind == inspect.Parameter.KEYWORD_ONLY \
+            and param.default == inspect.Parameter.empty:
             args.append(name)
     return tuple(args)
 
@@ -62,20 +63,15 @@ def has_var_kw_arg(fn):
 
 def has_request_arg(fn):
     sig = inspect.signature(fn)
-    # logging.info('sig=====>%s' % str(sig))
-    # logging.info('sig=====>%s' % sig)
     params = sig.parameters
-    # logging.info('sig.parameters====>%s' % sig.parameters)
-    # logging.info('sig.parameters====>%s' % sig.parameters['request'])
-    # logging.info('sig.parameters====>%s' % sig.parameters['request'].annotation)
     found = False
     for name, param in params.items():
-        # logging.info('param-------------%s' % param)
-        # logging.info('param.kind--------%s' % param.kind)
         if name == 'request':
             found = True
             continue
-        if found and (param.kind != inspect.Parameter.VAR_POSITIONAL and param.kind != inspect.Parameter.KEYWORD_ONLY and param.kind != inspect.Parameter.VAR_KEYWORD):
+        if found and (param.kind != inspect.Parameter.VAR_POSITIONAL \
+            and param.kind != inspect.Parameter.KEYWORD_ONLY \
+            and param.kind != inspect.Parameter.VAR_KEYWORD):
             raise ValueError('request parameter must be the last named parameter in function: %s%s' % (fn.__name__, str(sig)))
     return found
 
@@ -88,7 +84,7 @@ class RequestHandler(object):
         self._func = fn
         # 是否有request参数
         self._has_request_arg = has_request_arg(fn)
-        # 是否有可变关键字参数
+        # 是否有关键字参数
         self._has_var_kw_arg = has_var_kw_arg(fn)
         # 是否有命名关键字参数
         self._has_named_kw_args = has_named_kw_args(fn)
@@ -108,8 +104,6 @@ class RequestHandler(object):
                     return web.HTTPBadRequest('Missing Content-Type.')
                 ct = request.content_type.lower()
                 if ct.startswith('application/json'):
-                    #The MIME media type for JSON text is application/json.
-                    #JSON文本的MIME媒体类型是application / json。
                     params = await request.json()
                     logging.info('request.json() is %s' % request.json())
                     if not isinstance(params, dict):
@@ -118,8 +112,6 @@ class RequestHandler(object):
                 elif ct.startswith('application/x-www-form-urlencoded') or ct.startswith('multipart/form-data'):
                     params = await request.post()
                     kw = dict(**params)
-                    #**kw是关键字参数，kw接收的是一个dict。
-                    # 又可以先组装dict，再通过**kw传入：func(**{'a': 1, 'b': 2})。
                 else:
                     return web.HTTPBadRequest('Unsupported Content-Type: %s' % request.content_type)
             if request.method == 'GET':
@@ -143,14 +135,12 @@ class RequestHandler(object):
                     if name in kw:
                         copy[name] = kw[name]
                 kw = copy
-            # check named arg:
             for k, v in request.match_info.items():
                 if k in kw:
                     logging.warning('Duplicate arg name in named arg and kw args: %s' % k)
                 kw[k] = v
         if self._has_request_arg:
             kw['request'] = request
-        # check required kw:
         if self._required_kw_args:
             for name in self._required_kw_args:
                 if not name in kw:

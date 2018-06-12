@@ -88,7 +88,7 @@ def index(*, page='1'):
         'page': page,
         'blogs': blogs
     }
-#index = get('/')(index)
+
 
 @get('/blog/{id}')
 def get_blog(id):
@@ -103,17 +103,20 @@ def get_blog(id):
         'comments': comments
     }
 
+
 @get('/register')
 def register():
     return {
         '__template__': 'register.html'
     }
 
+
 @get('/signin')
 def signin():
     return {
         '__template__': 'signin.html'
     }
+
 
 @post('/api/authenticate')
 def authenticate(*, email, passwd):
@@ -140,6 +143,7 @@ def authenticate(*, email, passwd):
     r.body = json.dumps(user, ensure_ascii=False).encode('utf-8')
     return r
 
+
 @get('/signout')
 def signout(request):
     referer = request.headers.get('Referer')
@@ -147,6 +151,7 @@ def signout(request):
     r.set_cookie(COOKIE_NAME, '-deleted-', max_age=0, httponly=True)
     logging.info('user signed out.')
     return r
+
 
 @get('/manage/')
 def manage():
