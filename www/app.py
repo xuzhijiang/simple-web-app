@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 __author__ = 'Zhijiang Xu'
-#如何以最快的速度掌握编程，那就是不要复制，而是要自己敲
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -16,6 +15,7 @@ from .config import configs
 from .orm import create_pool
 from .coroweb import add_routes, add_static
 from .handlers import cookie2user, COOKIE_NAME
+
 
 def init_jinja2(app, **kw):
     logging.info('init jinja2...')
@@ -37,6 +37,7 @@ def init_jinja2(app, **kw):
             env.filters[name] = f
     app['__templating__'] = env
 
+
 @asyncio.coroutine
 def logger_factory(app, handler):
     logging.info('call------logger_factory')
@@ -46,9 +47,11 @@ def logger_factory(app, handler):
         return (yield from handler(request))
     return logger
 
+
 @asyncio.coroutine
 def auth_factory(app, handler):
     logging.info('call------auth_factory')
+
     @asyncio.coroutine
     def auth(request):
         logging.info('check user: %s %s' % (request.method, request.path))
@@ -65,9 +68,11 @@ def auth_factory(app, handler):
         return (yield from handler(request))
     return auth
 
+
 @asyncio.coroutine
 def data_factory(app, handler):
     logging.info('call------data_factory')
+
     @asyncio.coroutine
     def parse_data(request):
         logging.info('parse_data.......')
@@ -82,9 +87,11 @@ def data_factory(app, handler):
         return (yield from handler(request))
     return parse_data
 
+
 @asyncio.coroutine
 def response_factory(app, handler):
     logging.info('call------response_factory')
+
     @asyncio.coroutine
     def response(request):
         logging.info('Response handler...')
@@ -124,23 +131,25 @@ def response_factory(app, handler):
         return resp
     return response
 
+
 def datetime_filter(t):
     logging.info('call------datetime_filter')
     delta = int(time.time() - t)
     if delta < 60:
-        #second
+        # second
         return u'1分钟前'
     if delta < 3600:
         #
         return u'%s分钟前' % (delta // 60)
     if delta < 86400:
-        #86400 = 24 * 60 * 60
+        # 86400 = 24 * 60 * 60
         return u'%s小时前' % (delta // 3600)
     if delta < 604800:
-        #86400 * 7 = 604800
+        # 86400 * 7 = 604800
         return u'%s天前' % (delta // 86400)
     dt = datetime.fromtimestamp(t)
     return u'%s年%s月%s日' % (dt.year, dt.month, dt.day)
+
 
 @asyncio.coroutine
 def init(loop):
@@ -154,6 +163,7 @@ def init(loop):
     srv = yield from loop.create_server(app.make_handler(), '127.0.0.1', 9001)
     logging.info('server started at http://127.0.0.1:9001...')
     return srv
+
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(init(loop))

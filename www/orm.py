@@ -30,6 +30,7 @@ def create_pool(loop, **kw):
         loop=loop
     )
 
+
 @asyncio.coroutine
 def select(sql, args, size=None):
     log(sql, args)
@@ -65,6 +66,7 @@ def execute(sql, args, autocommit=True):
             raise
         return affected
 
+
 def create_args_string(num):
     L = []
     for n in range(num):
@@ -98,10 +100,12 @@ class IntegerField(Field):
     def __init__(self, name=None, primary_key=False, default=0):
         super().__init__(name, 'bigint', primary_key, default)
 
+
 class FloatField(Field):
 
     def __init__(self, name=None, primary_key=False, default=0.0):
         super().__init__(name, 'real', primary_key, default)
+
 
 class TextField(Field):
 
