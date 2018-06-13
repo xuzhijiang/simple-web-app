@@ -99,10 +99,12 @@ class RequestHandler(object):
         logging.info('%s(%s)' % (self._func.__name__, ', '.join(inspect.signature(self._func).parameters.keys())))
         kw = None
         if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
+            logging.info('request method: %s' % request.method)
             if request.method == 'POST':
                 if not request.content_type:
                     return web.HTTPBadRequest('Missing Content-Type.')
                 ct = request.content_type.lower()
+                logging.info('Content-Type: %s' % ct)
                 if ct.startswith('application/json'):
                     params = yield from request.json()
                     logging.info('request.json() is %s' % request.json())
@@ -112,6 +114,7 @@ class RequestHandler(object):
                 elif ct.startswith('application/x-www-form-urlencoded') or ct.startswith('multipart/form-data'):
                     params = yield from request.post()
                     kw = dict(**params)
+                    logging.info('request.post: %s' % kw)
                 else:
                     return web.HTTPBadRequest('Unsupported Content-Type: %s' % request.content_type)
             if request.method == 'GET':
@@ -120,6 +123,7 @@ class RequestHandler(object):
                 if qs:
                     kw = dict()
                     for k, v in parse.parse_qs(qs, True).items():
+                        logging.info('k: %s, v: %s' % (k, v))
                         kw[k] = v[0]
         if kw is None:
             logging.info('request.match_info is %s' % request.match_info)
@@ -130,6 +134,7 @@ class RequestHandler(object):
                 # remove all unamed kw:
                 copy = dict()
                 for name in self._named_kw_args:
+                    logging.info('request handler name: %s' % name)
                     if name in kw:
                         copy[name] = kw[name]
                 kw = copy
