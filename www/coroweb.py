@@ -33,7 +33,7 @@ def get_required_kw_args(fn):
     params = inspect.signature(fn).parameters
     for name, param in params.items():
         if param.kind == inspect.Parameter.KEYWORD_ONLY \
-            and param.default == inspect.Parameter.empty:
+                and param.default == inspect.Parameter.empty:
             args.append(name)
     return tuple(args)
 
@@ -93,24 +93,24 @@ class RequestHandler(object):
         # 得到required参数
         self._required_kw_args = get_required_kw_args(fn)
 
-    async def __call__(self, request):
+    @asyncio.coroutine
+    def __call__(self, request):
         logging.info('request is %s' % request)
         logging.info('%s(%s)' % (self._func.__name__, ', '.join(inspect.signature(self._func).parameters.keys())))
         kw = None
         if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
-            logging.info('......search arg==01.....')
             if request.method == 'POST':
                 if not request.content_type:
                     return web.HTTPBadRequest('Missing Content-Type.')
                 ct = request.content_type.lower()
                 if ct.startswith('application/json'):
-                    params = await request.json()
+                    params = yield from request.json()
                     logging.info('request.json() is %s' % request.json())
                     if not isinstance(params, dict):
                         return web.HTTPBadRequest('JSON body must be object.')
                     kw = params
                 elif ct.startswith('application/x-www-form-urlencoded') or ct.startswith('multipart/form-data'):
-                    params = await request.post()
+                    params = yield from request.post()
                     kw = dict(**params)
                 else:
                     return web.HTTPBadRequest('Unsupported Content-Type: %s' % request.content_type)
@@ -122,12 +122,10 @@ class RequestHandler(object):
                     for k, v in parse.parse_qs(qs, True).items():
                         kw[k] = v[0]
         if kw is None:
-            logging.info('kw is none.......')
             logging.info('request.match_info is %s' % request.match_info)
             kw = dict(**request.match_info)
             logging.info('kw is %s' % kw)
         else:
-            logging.info('kw is not none.....')
             if not self._has_var_kw_arg and self._named_kw_args:
                 # remove all unamed kw:
                 copy = dict()
@@ -147,7 +145,7 @@ class RequestHandler(object):
                     return web.HTTPBadRequest('Missing argument: %s' % name)
         logging.info('call with args: %s' % str(kw))
         try:
-            r = await self._func(**kw)
+            r = yield from self._func(**kw)
             return r
         except APIError as e:
             return dict(error=e.error, data=e.data, message=e.message)
@@ -166,40 +164,24 @@ def add_route(app, fn):
         raise ValueError('@get or @post not defined in %s.' % str(fn))
     if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):
         fn = asyncio.coroutine(fn)
-    #logging.info('add route %s %s => %s(%s)' % (method, path, fn.__name__, ', '.join(inspect.signature(fn).parameters.keys())))
+    logging.info('add route %s %s => %s(%s)' % (method, path, fn.__name__, ', '.join(inspect.signature(fn).parameters.keys())))
     app.router.add_route(method, path, RequestHandler(app, fn))
 
 
 def add_routes(app, module_name):
-    logging.info('coreweb....add_routes')
     n = module_name.rfind('.')
     if n == (-1):
-        #>>> __import__('handlers',globals(),locals())
-        #<module 'handlers' from '/mnt/c/Users/xu/Desktop/ZX/code/awesome-python3-webapp/www/handlers.py'>
         mod = __import__(module_name, globals(), locals())
-        #logging.info('mod=======>%s' % mod)
     else:
         name = module_name[n+1:]
-        logging.info('name is %s' % name)
-        mod = getattr(__import__(module_name[:n], globals(), locals(), [name]), name)
-    #logging.info('mod is %s' % mod)
-    #logging.info('mod is %s' % dir(mod))
+        mod = __import__(module_name[:n], globals(), locals())
     for attr in dir(mod):
-        #>>> dir(__import__('handlers', globals(),locals()))
-        #['Blog', 'Comment', 'User', '__author__', '__builtins__', 
-        #'__cached__', '__doc__', '__file__', '__loader__', '__name__', 
-        #'__package__', '__spec__', 'asyncio', 'base64', 'get', 'hashlib', 
-        #'index', 'json', 'logging', 'next_id', 'post', 're', 'time']
-        #logging.info('attr is %s' % attr)
         if attr.startswith('_'):
             continue
         fn = getattr(mod, attr)
-        #logging.info('fn===>%s' % fn)
+        logging.info('attr name: %s, attr value: %s' % (attr, fn))
         if callable(fn):
-            #logging.info('fn is callable: %s' % fn)
             method = getattr(fn, '__method__', None)
-            #logging.info('method=======>%s' % method)
             path = getattr(fn, '__route__', None)
-            #logging.info('path========>%s' % path)
             if method and path:
                 add_route(app, fn)
