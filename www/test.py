@@ -1,5 +1,5 @@
-from .models import User, Blog, Comment
-from .orm import create_pool
+from models import User, Blog, Comment
+from orm import create_pool
 
 
 def test():

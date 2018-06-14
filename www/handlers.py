@@ -7,11 +7,11 @@ __author__ = 'Zhijiang Xu'
 
 import re, time, json, logging, hashlib, base64, asyncio
 from aiohttp import web
-from .coroweb import get, post
-from .models import User, Comment, Blog, next_id
-from .config import configs
-from .markdown2 import markdown
-from .apis import Page, APIPermissionError, APIResourceNotFoundError, APIValueError
+from coroweb import get, post
+from models import User, Comment, Blog, next_id
+from config import configs
+from markdown2 import markdown
+from apis import Page, APIPermissionError, APIResourceNotFoundError, APIValueError
 
 
 COOKIE_NAME = 'awesession'

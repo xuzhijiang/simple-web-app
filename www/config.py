@@ -5,8 +5,10 @@
 __author__ = 'Zhijiang Xu'
 
 #先执行config_default脚本
-from .config_default import configs
+from config_default import configs
 import logging
+
+logging.info('__file__: %s' % __file__)
 
 class Dict(dict):
     '''
