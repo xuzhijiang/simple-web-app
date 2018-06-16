@@ -10,7 +10,7 @@ __author__ = 'Zhijiang Xu'
 configs = {
 	'db': {
 		'host': '127.0.0.1',
-		'user': 'root',
-		'password': 'password',
+		'user': 'xuzhijiang',
+		'password': '123456',
 	}
 }
