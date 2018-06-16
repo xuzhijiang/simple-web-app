@@ -4,6 +4,8 @@
 __author__ = 'Zhijiang Xu'
 
 import logging
+logging.basicConfig(level=logging.DEBUG)
+
 import asyncio, os, json, time
 from datetime import datetime
 from aiohttp import web
@@ -12,8 +14,6 @@ from config import configs
 from orm import create_pool
 from coroweb import add_routes, add_static
 from handlers import cookie2user, COOKIE_NAME
-logging.basicConfig(level=logging.INFO)
-
 
 def init_jinja2(app, **kw):
     logging.info('init jinja2...')
