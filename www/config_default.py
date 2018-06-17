@@ -4,9 +4,6 @@
 '''
 Default configurations.
 '''
-import logging
-
-__author__ = 'Zhijiang Xu'
 
 configs = {
 	'debug': True,
@@ -21,4 +18,3 @@ configs = {
 		'secret': 'Awesome'
 	}
 }
-logging.info('__file__ is %s' % __file__)

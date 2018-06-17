@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = 'Zhijiang Xu'
 
 import logging
 logging.basicConfig(level=logging.DEBUG)

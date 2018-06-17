@@ -1,5 +1,3 @@
-__author__ = 'Zhijiang Xu'
-
 import asyncio, os, inspect, logging, functools
 from urllib import parse
 from aiohttp import web

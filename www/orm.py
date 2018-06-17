@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-__author__ = 'Zhijiang Xu'
+
 
 import asyncio, logging
 import aiomysql
-
-
-logging.info('__file__ is %s' % __file__)
 
 
 def log(sql, args=()):

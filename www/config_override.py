@@ -5,12 +5,10 @@
 Override configurations.
 '''
 
-__author__ = 'Zhijiang Xu'
 
 configs = {
 	'db': {
-		'host': '127.0.0.1',
 		'user': 'xuzhijiang',
-		'password': '123456',
+		'password': '123456'
 	}
 }
