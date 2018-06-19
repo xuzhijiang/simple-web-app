@@ -93,11 +93,10 @@ class RequestHandler(object):
 
     @asyncio.coroutine
     def __call__(self, request):
-        logging.info('request is %s' % request)
+        logging.info('RequestHandler handler request: %s' % request)
         logging.info('%s(%s)' % (self._func.__name__, ', '.join(inspect.signature(self._func).parameters.keys())))
         kw = None
         if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
-            logging.info('request method: %s' % request.method)
             if request.method == 'POST':
                 if not request.content_type:
                     return web.HTTPBadRequest('Missing Content-Type.')
@@ -123,10 +122,9 @@ class RequestHandler(object):
                     for k, v in parse.parse_qs(qs, True).items():
                         logging.info('k: %s, v: %s' % (k, v))
                         kw[k] = v[0]
+        logging.info('kw: %s' % str(kw))
         if kw is None:
-            logging.info('request.match_info is %s' % request.match_info)
             kw = dict(**request.match_info)
-            logging.info('kw is %s' % kw)
         else:
             if not self._has_var_kw_arg and self._named_kw_args:
                 # remove all unamed kw:
@@ -140,6 +138,7 @@ class RequestHandler(object):
                 if k in kw:
                     logging.warning('Duplicate arg name in named arg and kw args: %s' % k)
                 kw[k] = v
+        logging.info('kw: %s' % str(kw))
         if self._has_request_arg:
             kw['request'] = request
         if self._required_kw_args:

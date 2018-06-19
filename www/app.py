@@ -37,7 +37,7 @@ def init_jinja2(app, **kw):
 
 @asyncio.coroutine
 def logger_factory(app, handler):
-    logging.info('call------logger_factory')
+
     @asyncio.coroutine
     def logger(request):
         logging.info('Request: %s %s' % (request.method, request.path))
@@ -47,7 +47,6 @@ def logger_factory(app, handler):
 
 @asyncio.coroutine
 def auth_factory(app, handler):
-    logging.info('call------auth_factory')
 
     @asyncio.coroutine
     def auth(request):
@@ -68,11 +67,9 @@ def auth_factory(app, handler):
 
 @asyncio.coroutine
 def data_factory(app, handler):
-    logging.info('call------data_factory')
 
     @asyncio.coroutine
     def parse_data(request):
-        logging.info('parse_data.......')
         logging.info('request.method is %s' % request.method)
         if request.method == 'POST':
             if request.content_type.startswith('application/json'):
@@ -87,12 +84,12 @@ def data_factory(app, handler):
 
 @asyncio.coroutine
 def response_factory(app, handler):
-    logging.info('call------response_factory')
 
     @asyncio.coroutine
     def response(request):
         logging.info('Response handler...')
         r = yield from handler(request)
+        logging.info('Response factory finish!')
         if isinstance(r, web.StreamResponse):
             return r
         if isinstance(r, bytes):
