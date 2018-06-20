@@ -36,17 +36,13 @@ class Page(object):
         >>> p3.limit
         10
         '''
-        #item_count 一共有多少条
         self.item_count = item_count
-        #page_index 要请求的页的索引
-        #page_size 每页允许有多少个item
         self.page_size = page_size
-        #page_count 这么多item,一共可以分多少页
         self.page_count = item_count // page_size + (1 if item_count % page_size > 0 else 0)
         if (item_count == 0) or (page_index > self.page_count):
-            #offset是指第self.page_index上第一个item的偏移
+            # offset是指第self.page_index上第一个item在所有item中是第几个item
             self.offset = 0
-            #limit 每页上限制有多少个item
+            # limit 每页上限制有多少个item
             self.limit = 0
             self.page_index = 1
         else:

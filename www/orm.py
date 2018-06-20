@@ -216,6 +216,7 @@ class Model(dict, metaclass=ModelMetaclass):
             sql.append('where')
             sql.append(where)
         rs = yield from select(' '.join(sql), args, 1)
+        print('rs length: %s' % len(rs))
         if len(rs) == 0:
             return None
         return rs[0]['_num_']

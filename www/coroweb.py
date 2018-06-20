@@ -122,7 +122,7 @@ class RequestHandler(object):
                     for k, v in parse.parse_qs(qs, True).items():
                         logging.info('k: %s, v: %s' % (k, v))
                         kw[k] = v[0]
-        logging.info('kw: %s' % str(kw))
+        logging.info('kw before: %s' % str(kw))
         if kw is None:
             kw = dict(**request.match_info)
         else:
@@ -138,7 +138,7 @@ class RequestHandler(object):
                 if k in kw:
                     logging.warning('Duplicate arg name in named arg and kw args: %s' % k)
                 kw[k] = v
-        logging.info('kw: %s' % str(kw))
+        logging.info('kw after: %s' % str(kw))
         if self._has_request_arg:
             kw['request'] = request
         if self._required_kw_args:
