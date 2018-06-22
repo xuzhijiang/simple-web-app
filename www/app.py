@@ -40,7 +40,7 @@ def logger_factory(app, handler):
 
     @asyncio.coroutine
     def logger(request):
-        logging.info('Request: %s %s' % (request.method, request.path))
+        logging.info('logger_factory: Request: %s %s' % (request.method, request.path))
         return (yield from handler(request))
     return logger
 
@@ -50,7 +50,7 @@ def auth_factory(app, handler):
 
     @asyncio.coroutine
     def auth(request):
-        logging.info('check user: %s %s' % (request.method, request.path))
+        logging.info('auth_factory: check user: %s %s' % (request.method, request.path))
         request.__user__ = None
         cookie_str = request.cookies.get(COOKIE_NAME)
         logging.info('cookie_str is %s' % cookie_str)
@@ -70,7 +70,7 @@ def data_factory(app, handler):
 
     @asyncio.coroutine
     def parse_data(request):
-        logging.info('request.method is %s' % request.method)
+        logging.info('data_factory: request.method is %s' % request.method)
         if request.method == 'POST':
             if request.content_type.startswith('application/json'):
                 request.__data__ = yield from request.json()
@@ -87,7 +87,7 @@ def response_factory(app, handler):
 
     @asyncio.coroutine
     def response(request):
-        logging.info('Response handler...')
+        logging.info('response_factory: Response handler...')
         r = yield from handler(request)
         logging.info('Response factory finish!')
         if isinstance(r, web.StreamResponse):
