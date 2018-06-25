@@ -104,7 +104,7 @@ class RequestHandler(object):
                 logging.info('Content-Type: %s' % ct)
                 if ct.startswith('application/json'):
                     params = yield from request.json()
-                    logging.info('request.json() is %s' % request.json())
+                    logging.info('request.json() is %s' % params)
                     if not isinstance(params, dict):
                         return web.HTTPBadRequest('JSON body must be object.')
                     kw = params
