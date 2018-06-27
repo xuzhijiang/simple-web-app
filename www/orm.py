@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-import asyncio, logging
-import aiomysql
+import asyncio, logging, aiomysql
 
 
 def log(sql, args=()):
